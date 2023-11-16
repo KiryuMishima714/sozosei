@@ -1,24 +1,26 @@
-from pyjulius import Julius
+import subprocess
 
-def on_recognition(text):
-    print(f"Recognized: {text}")
-
-def main():
-    # Juliusクライアントの作成
-    julius_client = Julius(host="localhost", port=10500, callback=on_recognition)
+def run_julius(julius_path, jconf_path):
+    julius_command = f"{julius_path} -C {jconf_path}"
+    julius_process = subprocess.Popen(julius_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     try:
-        # Juliusに接続
-        julius_client.connect()
-
-        # メインループ
         while True:
-            pass
+            output = julius_process.stdout.readline().strip()
+
+            # 認識結果が出力されたら表示
+            if "sentence1:" in output:
+                recognized_words = output.split("sentence1:")[1].strip()
+                print("Recognized words:", recognized_words)
 
     except KeyboardInterrupt:
-        print("KeyboardInterrupt: Disconnecting from Julius.")
-        julius_client.disconnect()
+        # プログラムが中断されたらプロセスを終了
+        julius_process.terminate()
 
 if __name__ == "__main__":
-    main()
+    # Juliusの実行ファイルと設定ファイルのパスを指定
+    julius_path = "/path/to/julius"
+    jconf_path = "/path/to/your/julius.jconf"
 
+    # Juliusの実行
+    run_julius(julius_path, jconf_path)
