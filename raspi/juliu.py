@@ -1,25 +1,24 @@
-import julius
+from pyjulius import Julius
+
+def on_recognition(text):
+    print(f"Recognized: {text}")
 
 def main():
-    # Juliusのクライアントを作成
-    client = julius.Client(host="localhost", port=10500, timeout=1.0)
+    # Juliusクライアントの作成
+    julius_client = Julius(host="localhost", port=10500, callback=on_recognition)
 
     try:
         # Juliusに接続
-        client.connect()
+        julius_client.connect()
 
-        print("Waiting for speech recognition results...")
-
-        # 認識結果が得られるまでループ
+        # メインループ
         while True:
-            result = client.results()
-            if result:
-                # 認識結果を表示
-                print("Recognized:", result["text"])
+            pass
 
     except KeyboardInterrupt:
-        # プログラムが中断されたらクライアントを切断
-        client.disconnect()
+        print("KeyboardInterrupt: Disconnecting from Julius.")
+        julius_client.disconnect()
 
 if __name__ == "__main__":
     main()
+
