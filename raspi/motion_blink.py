@@ -13,7 +13,7 @@ def convert(sec):
     # 時間、分、秒、ミリ秒の形式で返す
     hour = minutes // 60
     min = minutes % 60
-    return f"{int(hour)}:{int(min)}:{int(seconds)}:{int(milli_sec)}"
+    return f"{int(hour)}:{int(min)}:{int(seconds)}"
 
 def preprocess_for_allmotion(gray, avg):
     #現在のフレームと移動平均との差を計算、、avgの更新
@@ -25,12 +25,11 @@ def preprocess_for_allmotion(gray, avg):
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
     return contours
 
-def process_time(start_time, time_result):
+def update_time(start_time, time_result):
     end_time = time.time()
     time_result += end_time - start_time
     start_time = time.time()
     return time_result
-
 
 if __name__ == '__main__':
     #VideoCaptureオブジェクト取得
@@ -96,7 +95,7 @@ if __name__ == '__main__':
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
 
                 #ストップウォッチ停止状態のプログラム
-                time_result = process_time(start_time, time_result)
+                time_result = update_time(start_time, time_result)
                 print(convert(time_result))
 
             #画像表示
