@@ -108,7 +108,9 @@ if __name__ == '__main__':
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
                     #ストップウォッチ更新、表示プログラム（集中時間記録）
                     time_result = update_time(start_time, time_result)
-                    print(convert(time_result)) 
+                else:
+                    start_time = None
+                print(convert(time_result)) 
                 
                 #集中時間終了
 
