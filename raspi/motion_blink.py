@@ -23,6 +23,7 @@ def preprocess_for_allmotion(gray, avg):
     thresh = cv2.threshold(frameDelta, 3, 255, cv2.THRESH_BINARY)[1]
     #輪郭を抽出する(写っているすべてのもの)
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+    print(frameDelta)
     return contours
 
 def update_time(start_time, time_result):
