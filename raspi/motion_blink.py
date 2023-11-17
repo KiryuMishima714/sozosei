@@ -1,6 +1,7 @@
 import os,sys
 import cv2
 import time
+import numpy as np
 
 # 秒を時間、分、秒、ミリ秒に変換する関数
 def convert(sec):
@@ -24,12 +25,8 @@ def preprocess_for_allmotion(gray, avg, move_total):
     #輪郭を抽出する(写っているすべてのもの)
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
     #移動の程度を計算
-    row_len = len(frameDelta[:][0])
-    colum_len = len(frameDelta[0][:])
-    for row in range(row_len): #各列に対して
-        for colum in range(colum_len):
-            move_total += frameDelta[row][colum]
-    delta_avg = move_total//(row_len + colum_len)
+    move_total = np.sum(frameDelta)
+    delta_avg = move_total//(frameDelta.shape[0] + frameDelta.shape[1])
     print(delta_avg)
     return contours, delta_avg
 
