@@ -23,8 +23,7 @@ def preprocess_for_allmotion(gray, avg):
     thresh = cv2.threshold(frameDelta, 3, 255, cv2.THRESH_BINARY)[1]
     #輪郭を抽出する(写っているすべてのもの)
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-    print(frameDelta)
-    return contours
+    return contours, frameDelta
 
 def update_time(start_time, time_result):
     end_time = time.time()
@@ -45,6 +44,8 @@ if __name__ == '__main__':
     avg = None
     start_time = time.time()
     time_result = 0
+    delta_threshold = 50 #移動度合いがこれより大きいものを検知する
+    w_threshold = 30 #これよりframeが大きいものを検知する
 
     while True:
         #フレームを取得
@@ -64,8 +65,8 @@ if __name__ == '__main__':
             avg = gray.copy().astype("float")
             continue
         
-        #動体検知を顔のみにする場合、使用されない
-        contours = preprocess_for_allmotion(gray, avg)
+        #動体の程度などを取得
+        contours, delta = preprocess_for_allmotion(gray, avg)
 
         # 顔が1つだけ検出された場合
         if len(faces) == 1:
@@ -85,11 +86,11 @@ if __name__ == '__main__':
                 cv2.rectangle(frame, (x + ex, y + ey), (x + ex + ew, y + ey + eh), (255, 255, 0), 1)
 
             # 差分があった点を画面に描く（すべての動体 not only face）
-            #for target in contours:
-            #    x, y, w, h = cv2.boundingRect(target)
+            for target in contours:
+                x, y, w, h = cv2.boundingRect(target)
 
-                #wが300より小さいものを検出したand目が開いている(この間時間記録) 
-                if w < 300 and len(eyes) != 0:
+                #動体がw_thresholdより大きい and delta_thresholdより大きく動いている and 目が開いている(この間時間記録) 
+                if w > w_threshold and delta > delta_threshold and len(eyes) != 0:
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
                     cv2.putText(frame,"good concentration!!", (10,100),
