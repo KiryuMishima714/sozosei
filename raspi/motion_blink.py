@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("start")
 
     avg = None
-    start_time = time.time()
+    start_time = None
     time_result = 0
     delta_threshold = 50 #移動度合いがこれより大きいものを検知する
     w_threshold = 30 #これよりframeが大きいものを検知する
@@ -92,6 +92,9 @@ if __name__ == '__main__':
                 #集中時間記録
                 #動体がw_thresholdより大きい and delta_thresholdより動いていない and 目が開いている(この間時間記録) 
                 if w > w_threshold and delta < delta_threshold and len(eyes) != 0:
+                    #顔を認識してから時間開始
+                    if start_time is None:
+                        start_time = time.time()
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
                     cv2.putText(frame,"good concentration!!", (10,100),
