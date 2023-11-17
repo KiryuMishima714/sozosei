@@ -97,25 +97,13 @@ if __name__ == '__main__':
                 x, y, w, h = cv2.boundingRect(target)
 
                 #集中時間記録
-                #動体がw_thresholdより大きい and delta_thresholdより動いていない and 目が開いている(この間時間記録) 
-                if w > w_threshold and delta < delta_threshold and len(eyes) != 0:
-                    #顔を認識してから記録スタート（一番始めのみ）
-                    if start_time is None:
-                        start_time = time.time()
+                #動体がw_thresholdより大きい and 移動度がある値より大きい or 目が認識できない（not 集中） 
+                if (w > w_threshold and delta > delta_threshold) or len(eyes) == 0:
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
                     cv2.putText(frame,"good concentration!!", (10,100),
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
-                    #ストップウォッチ更新、表示プログラム（集中時間記録）
-                    time_result = update_time(start_time, time_result)
-                else:
-                    start_time = None
-                print(convert(time_result)) 
-                
                 #集中時間終了
-
-
-                 
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) == 27:
