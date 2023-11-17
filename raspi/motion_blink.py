@@ -15,7 +15,7 @@ def convert(sec):
     min = minutes % 60
     return f"{int(hour)}:{int(min)}:{int(seconds)}"
 
-def preprocess_for_allmotion(gray, avg):
+def preprocess_for_allmotion(gray, avg, move_total):
     #現在のフレームと移動平均との差を計算、、avgの更新
     cv2.accumulateWeighted(gray, avg, 0.5)
     frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
@@ -23,9 +23,18 @@ def preprocess_for_allmotion(gray, avg):
     thresh = cv2.threshold(frameDelta, 3, 255, cv2.THRESH_BINARY)[1]
     #輪郭を抽出する(写っているすべてのもの)
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-    return contours, frameDelta
+    #移動の程度を計算
+    row_len = len(frameDelta[:][0])
+    colum_len = len(frameDelta[0][:])
+    for row in range(row_len): #各列に対して
+        for colum in range(colum_len):
+            move_total += frameDelta[row][colum]
+    delta_avg = move_total//(row_len + colum_len)
+    print(delta_avg)
+    return contours, delta_avg
 
 def update_time(start_time, time_result):
+    #
     end_time = time.time()
     time_result += end_time - start_time
     start_time = time.time()
@@ -46,6 +55,7 @@ if __name__ == '__main__':
     time_result = 0
     delta_threshold = 50 #移動度合いがこれより大きいものを検知する
     w_threshold = 30 #これよりframeが大きいものを検知する
+    move_total = 0
 
     while True:
         #フレームを取得
@@ -66,7 +76,7 @@ if __name__ == '__main__':
             continue
         
         #動体の程度などを取得
-        contours, delta = preprocess_for_allmotion(gray, avg)
+        contours, delta = preprocess_for_allmotion(gray, avg, move_total)
 
         # 顔が1つだけ検出された場合
         if len(faces) == 1:
@@ -92,7 +102,7 @@ if __name__ == '__main__':
                 #集中時間記録
                 #動体がw_thresholdより大きい and delta_thresholdより動いていない and 目が開いている(この間時間記録) 
                 if w > w_threshold and delta < delta_threshold and len(eyes) != 0:
-                    #顔を認識してから時間開始
+                    #顔を認識してから記録スタート（一番始めのみ）
                     if start_time is None:
                         start_time = time.time()
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
