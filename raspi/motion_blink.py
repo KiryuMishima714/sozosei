@@ -88,16 +88,16 @@ if __name__ == '__main__':
             #for target in contours:
             #    x, y, w, h = cv2.boundingRect(target)
 
-                #動体を検出していないand目が開いている(この間時間記録) 
+                #wが300より小さいものを検出したand目が開いている(この間時間記録) 
                 if w < 300 and len(eyes) != 0:
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
                     cv2.putText(frame,"good concentration!!", (10,100),
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
 
-                #ストップウォッチ停止状態のプログラム
-                time_result = update_time(start_time, time_result)
-                print(convert(time_result))      
+            #ストップウォッチ更新プログラム（顔が検知され続けいている間記録）
+            time_result = update_time(start_time, time_result)
+            print(convert(time_result))      
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) == 27:
