@@ -23,6 +23,7 @@ def preprocess_for_allmotion(gray, avg):
     thresh = cv2.threshold(frameDelta, 3, 255, cv2.THRESH_BINARY)[1]
     #輪郭を抽出する(写っているすべてのもの)
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+    print(frameDelta)
     return contours
 
 def update_time(start_time, time_result):
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     avg = None
     start_time = time.time()
     time_result = 0
+    motion_threshold = 1000 #動体閾値を設定
 
     while True:
         #フレームを取得
@@ -63,7 +65,7 @@ if __name__ == '__main__':
             avg = gray.copy().astype("float")
             continue
         
-        #動体検知を顔のみにする場合、使用されない
+        #動体検知
         contours = preprocess_for_allmotion(gray, avg)
 
         # 顔が1つだけ検出された場合
@@ -84,15 +86,20 @@ if __name__ == '__main__':
                 cv2.rectangle(frame, (x + ex, y + ey), (x + ex + ew, y + ey + eh), (255, 255, 0), 1)
 
             # 差分があった点を画面に描く（すべての動体 not only face）
-            #for target in contours:
-            #    x, y, w, h = cv2.boundingRect(target)
+            motion_detected = False
+            for target in contours:
+                x, y, w, h = cv2.boundingRect(target)
 
-                #動体を検出していないand目が開いている(この間時間記録) 
-                if w < 300 and len(eyes) != 0:
+                #小さい動体は検知しない(skip)
+                if w < 300: continue
+
+                #一定以上の動きがあり、かつ目が開いているとき(この間時間記録) 
+                if cv2.contourArea(target) > motion_threshold and len(eyes) != 0:
+                    motion_detected = True
                     #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
                     cv2.putText(frame,"good concentration!!", (10,100),
-                                cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
+                                cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)                     
 
                 #ストップウォッチ停止状態のプログラム
                 time_result = update_time(start_time, time_result)
