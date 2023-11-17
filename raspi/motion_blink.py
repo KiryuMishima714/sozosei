@@ -96,12 +96,7 @@ if __name__ == '__main__':
 
                 #ストップウォッチ停止状態のプログラム
                 time_result = update_time(start_time, time_result)
-                print(convert(time_result))
-
-            #画像表示
-            cv2.imshow("Frame", frame)
-
-            
+                print(convert(time_result))      
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) == 27:
