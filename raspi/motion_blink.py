@@ -96,14 +96,20 @@ if __name__ == '__main__':
             for target in contours:
                 x, y, w, h = cv2.boundingRect(target)
 
-                #集中時間記録
-                #動体がw_thresholdより大きい and 移動度がある値より大きい or 目が認識できない（not 集中） 
-                if (w > w_threshold and delta > delta_threshold) or len(eyes) == 0:
-                    #動体の位置を描画（for target in contoursが無効の場合、顔の動体のみ検出）
+                #if 輪郭がある値より大きく、移動度がある値より大きい（not 集中）
+                if w > w_threshold and delta > delta_threshold:
+                    #動体の位置を描画
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
-                    cv2.putText(frame,"good concentration!!", (10,100),
+                    continue #集中しているときの処理が実行されないように、yesの場合、下を実行しない
+
+                #if目が認識できていない（not 集中）
+                if len(eyes) == 0:
+                    #以下、集中できていないときの処理を記述
+                    continue
+
+                #以下、集中できているときの処理を記述
+                cv2.putText(frame,"good concentration!!", (10,100),
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
-                #集中時間終了
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) == 27:
