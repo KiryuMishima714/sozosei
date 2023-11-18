@@ -53,6 +53,7 @@ if __name__ == '__main__':
     delta_threshold = 50 #移動度合いがこれより大きいものを検知する
     w_threshold = 30 #これよりframeが大きいものを検知する
     move_total = 0
+    concentrate_flag = True
 
     while True:
         #フレームを取得
@@ -98,18 +99,24 @@ if __name__ == '__main__':
 
                 #if 輪郭がある値より大きく、移動度がある値より大きい（not 集中）
                 if w > w_threshold and delta > delta_threshold:
+                    concentrate_flag = False
                     #動体の位置を描画
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0,255,0), 2)
-                    continue #集中しているときの処理が実行されないように、yesの場合、下を実行しない
+                    break #集中していないことが判定できたのでfor文終了
 
                 #if目が認識できていない（not 集中）
                 if len(eyes) == 0:
-                    #以下、集中できていないときの処理を記述
-                    continue
-
+                    concentrate_flag = False
+                    break #集中していないことが判定できたのでfor文終了
+            
+            if concentrate_flag == True:
                 #以下、集中できているときの処理を記述
                 cv2.putText(frame,"good concentration!!", (10,100),
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
+            
+            else:
+                concentrate_flag = True #初期化
+            
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) == 27:
