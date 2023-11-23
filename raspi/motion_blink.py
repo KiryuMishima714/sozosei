@@ -111,10 +111,12 @@ if __name__ == '__main__':
             
             if concentrate_flag == True:
                 #以下、集中できているときの処理を記述
+                print("consentration")
                 cv2.putText(frame,"good concentration!!", (10,100),
                                 cv2.FONT_HERSHEY_PLAIN, 3, (0,0,255), 2, cv2.LINE_AA)
             
             else:
+                print("not consentrate")
                 concentrate_flag = True #初期化
             
 
