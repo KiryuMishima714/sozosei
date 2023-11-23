@@ -50,7 +50,7 @@ if __name__ == '__main__':
     avg = None
     start_time = None
     time_result = 0
-    delta_threshold = 50 #移動度合いがこれより大きいものを検知する
+    delta_threshold = 1500 #移動度合いがこれより大きいものを検知する
     w_threshold = 30 #これよりframeが大きいものを検知する
     move_total = 0
 
@@ -95,7 +95,6 @@ if __name__ == '__main__':
             # 差分があった点を画面に描く（すべての動体 not only face）
             for target in contours:
                 x, y, w, h = cv2.boundingRect(target)
-
                 #集中時間記録
                 #動体がw_thresholdより大きい and delta_thresholdより動いていない and 目が開いている(この間時間記録) 
                 if w > w_threshold and delta < delta_threshold and len(eyes) != 0:
@@ -109,7 +108,6 @@ if __name__ == '__main__':
                     #ストップウォッチ更新、表示プログラム（集中時間記録）
                     time_result = update_time(start_time, time_result)
                     print(convert(time_result))
-                
                 #集中時間終了
 
 
