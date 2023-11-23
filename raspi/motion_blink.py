@@ -50,7 +50,7 @@ if __name__ == '__main__':
     avg = None
     start_time = None
     time_result = 0
-    delta_threshold = 50 #移動度合いがこれより大きいものを検知する
+    delta_threshold = 1500 #移動度合いがこれより大きいものを検知する
     w_threshold = 30 #これよりframeが大きいものを検知する
     move_total = 0
     concentrate_flag = True
