@@ -1,57 +1,84 @@
 import subprocess
-import numpy as np
-import wave
+import sys
+import os
 import pyaudio
+import wave
 
-julius = "/path/to/your/julius"
-main = "/path/to/your/main.jconf"
-am_dnn = "/path/to/your/am-dnn.jconf"
-julius_dnn = "/path/to/your/julius.dnnconf"
+# Juliusの実行ファイルへのパスを指定してください
+JULIUS_PATH = "/path/to/julius"
 
-# 録音設定
-sample_rate = 16000  # サンプリングレート (Hz)
-duration = 5  # 録音時間 (秒)
+# サンプリングレートやサンプルサイズ、Juliusの設定ファイルのパスなどを設定します
+RATE = 16000
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
 
-# マイクからの入力を録音
-print("録音中...")
+# 録音した音声を一時的に保存するファイル名
+AUDIO_FILENAME = "recorded_audio.wav"
 
-p = pyaudio.PyAudio()
-stream = p.open(format=pyaudio.paInt16,
-                channels=1,
-                rate=sample_rate,
-                input=True,
-                frames_per_buffer=1024)
+def record_audio(filename, duration=5):
+    """
+    マイクから音声を録音し、指定したファイルに保存する関数。
 
-frames = []
-for i in range(0, int(sample_rate / 1024 * duration)):
-    data = stream.read(1024)
-    frames.append(data)
+    :param filename: 保存する音声ファイルの名前
+    :param duration: 録音する時間（秒）
+    """
+    p = pyaudio.PyAudio()
+    stream = p.open(format=FORMAT, channels=1, rate=RATE, input=True, frames_per_buffer=CHUNK)
 
-print("録音終了")
+    frames = []
+    print("Recording...")
 
-# 録音データを一時的なWAVファイルに保存
-input_audio_file = "input.wav"
-with wave.open(input_audio_file, 'wb') as wf:
+    for i in range(0, int(RATE / CHUNK * duration)):
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    print("Finished recording.")
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    # 録音した音声をWAVファイルとして保存
+    wf = wave.open(filename, 'wb')
     wf.setnchannels(1)
-    wf.setsampwidth(pyaudio.PyAudio().get_sample_size(pyaudio.paInt16))
-    wf.setframerate(sample_rate)
+    wf.setsampwidth(pyaudio.PyAudio().get_sample_size(FORMAT))
+    wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
+    wf.close()
 
-# Juliusを実行
-args = [julius, "-C", main, "-C", am_dnn, "-dnnconf", julius_dnn, "-input", "rawfile", "-cutsilence"]
-p = subprocess.run(args, stdout=subprocess.PIPE, input=input_audio_file)
-print(p.stdout.decode())
+def run_julius(audio_filename):
+    """
+    Juliusを起動し、録音した音声ファイルを認識して結果を表示する関数。
 
-# 解析結果から文を抽出
-output = p.stdout.decode().split("### read waveform input")[1].split("\n\n")
-for i in output:
-    if "sentence1:" not in i:
-        continue
-    sentence = i.split("sentence1:")[1].split("\n")[0].replace(" ", "")
-    print(sentence)
+    :param audio_filename: 録音した音声ファイルの名前
+    """
+    # Juliusのコマンドライン引数を設定
+    command = [JULIUS_PATH, '-C', '/path/to/julius-kit/dictation-kit-v4.4/main.jconf', '-module']
 
-# ストリームを閉じる
-stream.stop_stream()
-stream.close()
-p.terminate()
+    # Juliusプロセスを起動し、標準入力から音声データを渡す
+    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
+    # 録音した音声ファイルを読み込む
+    with open(audio_filename, 'rb') as audio_file:
+        audio_data = audio_file.read()
+
+    # Juliusに音声データを渡して認識結果を取得
+    stdout, stderr = process.communicate(input=audio_data)
+
+    # 認識結果を表示
+    print("Recognition result:")
+    print(stdout)
+
+    # エラーメッセージがあれば表示
+    if stderr:
+        print("Error:", stderr)
+
+if __name__ == "__main__":
+    # 録音した音声を保存するファイル
+    audio_filename = AUDIO_FILENAME
+
+    # 音声の録音とJuliusの実行
+    record_audio(audio_filename)
+    run_julius(audio_filename)
+
+    # Clean up: 一時的に作成した音声ファイルを削除
+    os.remove(audio_filename)
